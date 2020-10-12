@@ -12,7 +12,24 @@ const server = app.listen(
 
 const io = socket(server);
 
+//Snake game data declaration
+let canvas = { width: 300, height: 300 }
+let snake = [
+    { x: 150, y: 150 },
+    { x: 140, y: 150 },
+    { x: 130, y: 150 },
+    { x: 120, y: 150 },
+    { x: 110, y: 150 },
+];
+
+//.
+
 io.on('connection', socket => {
-    console.log('new connection')
-    socket.emit('connected', "hello world!")
+    console.log("New Connection")
+    const gameStateObject = {
+        snake: snake,
+        canvas: canvas
+    }
+
+    socket.emit('gameState', gameStateObject)
 })
