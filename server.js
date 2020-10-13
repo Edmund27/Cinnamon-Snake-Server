@@ -57,6 +57,8 @@ io.on('connection', socket => {
     })
 
     function main() {
+        if (gameOver()) return
+
         setTimeout(function onTick() {
             changingDirection = false
             moveSnake()
@@ -123,19 +125,36 @@ io.on('connection', socket => {
             dy = 10
         }
     }
+    function randomTen(min, max) {
+        return Math.round((Math.random() * (max - min) + min) / 10) * 10;
+    }
+
+    function createFood() {
+        foodX = randomTen(0, canvas.width - 10);
+        foodY = randomTen(0, canvas.height - 10);
+
+        snake.forEach(function isFoodOnSnake(part) {
+            const foodIsOnSnake = part.x == foodX && part.y == foodY
+            if (foodIsOnSnake)
+                createFood();
+        });
+    }
+
+    function gameOver() {
+        for (let i = 4; i < snake.length; i++) {
+            const colision = snake[i].x === snake[0].x &&
+                snake[i].y === snake[0].y
+            if (colision) return true
+        }
+        const hitLeftWall = snake[0].x < 0;
+        const hitRightWall = snake[0].x > canvas.width - 10;
+        const hitToptWall = snake[0].y < 0;
+        const hitBottomWall = snake[0].y > canvas.height - 10;
+        return hitLeftWall ||
+            hitRightWall ||
+            hitToptWall ||
+            hitBottomWall
+    }
+
 })
 
-function randomTen(min, max) {
-    return Math.round((Math.random() * (max - min) + min) / 10) * 10;
-}
-
-function createFood() {
-    foodX = randomTen(0, canvas.width - 10);
-    foodY = randomTen(0, canvas.height - 10);
-
-    snake.forEach(function isFoodOnSnake(part) {
-        const foodIsOnSnake = part.x == foodX && part.y == foodY
-        if (foodIsOnSnake)
-            createFood();
-    });
-}
