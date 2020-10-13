@@ -25,6 +25,8 @@ let dx = 10
 let dy = 0
 let speed = 100
 let changingDirection = false
+let foodX
+let foodY
 
 //.
 
@@ -46,6 +48,7 @@ io.on('connection', socket => {
         score = 0;
         changingDirection = false
 
+        createFood()
         main()
     })
 
@@ -59,6 +62,11 @@ io.on('connection', socket => {
             moveSnake()
             const gameStateObject = {
                 snake: snake,
+                score: score,
+                food: {
+                    X: foodX,
+                    Y: foodY
+                }
             }
 
             socket.emit('gameState', gameStateObject)
@@ -69,7 +77,14 @@ io.on('connection', socket => {
     function moveSnake() {
         const head = { x: snake[0].x + dx, y: snake[0].y + dy }
         snake.unshift(head)
-        snake.pop();
+
+        if (snake[0].x === foodX && snake[0].y === foodY) {
+            score += 10;
+
+            createFood();
+        } else {
+            snake.pop();
+        }
     }
 
     function changeDirection(keyPressed) {
@@ -109,3 +124,18 @@ io.on('connection', socket => {
         }
     }
 })
+
+function randomTen(min, max) {
+    return Math.round((Math.random() * (max - min) + min) / 10) * 10;
+}
+
+function createFood() {
+    foodX = randomTen(0, canvas.width - 10);
+    foodY = randomTen(0, canvas.height - 10);
+
+    snake.forEach(function isFoodOnSnake(part) {
+        const foodIsOnSnake = part.x == foodX && part.y == foodY
+        if (foodIsOnSnake)
+            createFood();
+    });
+}
